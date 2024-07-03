@@ -4,9 +4,9 @@ import cv2
 from ultralytics import YOLO
 from tracker import Tracker
 
-video_path = r"C:\Users\82102\One\바탕 화면\Deepsort_prac\people.mp4"
-video_out_path = r'C:\Users\82102\One\바탕 화면\Deepsort_prac\people_out.mp4'
-save_dir = r'C:\Users\82102\One\바탕 화면\Deepsort_prac\images'
+video_path = r"D:\reid\people.mp4"
+video_out_path = r'D:\reid\people_out.mp4'
+save_dir = r'D:\reid\images'
 os.makedirs(save_dir, exist_ok=True)
 
 cap = cv2.VideoCapture(video_path)
@@ -19,7 +19,7 @@ model = YOLO("yolov8n.pt")
 tracker = Tracker()
 colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for j in range(10)]
 
-detection_threshold = 0.5
+detection_threshold = 0.3
 cv2.namedWindow("Tracking", cv2.WINDOW_NORMAL)
 frame_count = 0
 
@@ -30,7 +30,7 @@ print("'t'를 눌러 추적할 인물 ID를 입력하세요. (형식: person1, p
 print("'q'를 눌러 종료합니다.")
 
 while ret:
-    results = model(frame)
+    results = model(frame, classes=[0])
 
     for result in results:
         detections = []
@@ -55,13 +55,13 @@ while ret:
         if person_id in tracking_ids:
             person_dir = os.path.join(save_dir, person_id)
             os.makedirs(person_dir, exist_ok=True)
-            
+
             # 바운딩 박스 영역 크롭
             crop_img = frame[y1:y2, x1:x2]
-            
+
             # 크롭된 이미지가 비어있지 않은지 확인
             if crop_img.size != 0:
-                save_path = os.path.join(person_dir, f"{person_id}_{frame_count}.jpg")
+                save_path = os.path.join(person_dir, f"{personid}{frame_count}.jpg")
                 try:
                     success = cv2.imwrite(save_path, crop_img)
                     if success:
@@ -74,9 +74,9 @@ while ret:
                 print(f"프레임 {frame_count}: {person_id} 크롭 영역이 유효하지 않음")
 
     cv2.putText(frame, f"Total Persons: {len(tracker.tracks)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-    
+
     cv2.imshow("Tracking", frame)
-    
+
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         print("프로그램 종료")

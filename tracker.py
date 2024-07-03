@@ -18,7 +18,7 @@ class Tracker:
 
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
         self.tracker = DeepSortTracker(metric)
-        self.encoder = gdet.create_box_encoder(encoder_model_filename, batch_size=1)
+        self.encoder = gdet.create_box_encoder(encoder_model_filename, batch_size=64)
 
     def update(self, frame, detections):
 
@@ -31,6 +31,7 @@ class Tracker:
         bboxes = np.asarray([d[:-1] for d in detections])
         bboxes[:, 2:] = bboxes[:, 2:] - bboxes[:, 0:2]
         scores = [d[-1] for d in detections]
+        # print("scores: ", scores)
 
         features = self.encoder(frame, bboxes)
 
